@@ -15,6 +15,8 @@
     <script type="module">
         import cities from '/cities1.json' assert { type: "json" };
 
+        var query = "parcels"
+
         var docURL = window.location.href,
         params = [];
 
@@ -35,7 +37,7 @@
             params = docURL.split('/');
             
             var city = params[0]
-            var query = params[1]
+            query = params[1]
 
             let country = cities.find(el => el.name === city);
 
@@ -88,7 +90,7 @@
                 a.appendChild(linkText);
                 a.title = element.name;
                 a.style = "padding: 10px; margin: 10px;";
-                a.href = location.host + "/#/" + element.name + "/" + query;
+                a.href = "https://" + location.host + "/#/" + element.name + "/" + query;
 
                 document.body.appendChild(a);
             });
