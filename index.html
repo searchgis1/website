@@ -1,8 +1,117 @@
-<!DOCTYPE html>
-<html>
+<head>
+    <title>SearchGIS</title>
+</head>
 <body>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5SH8CK1HQW"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
 
-<p style="text-align: center; font-size: 100px;">test</p>
+    gtag('config', 'G-5SH8CK1HQW');
+    </script>
 
+    <script type="module">
+        import cities from '/cities1.json' assert { type: "json" };
+
+        var docURL = window.location.href,
+        params = [];
+
+        // filter out the website origin "example.github.io" in the OP example      
+        docURL = docURL.replace(window.location.origin, '');
+
+        // if /#/ found then we have URL parameters
+        // grabbing the parameters part of the URL
+        if (docURL.indexOf('/#/') > -1) {
+        docURL = docURL.split('/#/')[1];
+        if (docURL != '') {
+
+            // omit the last forward slash if exist
+            if (docURL[docURL.length - 1] == '/') {
+            docURL = docURL.substring(0, docURL.length - 1);
+            }
+            // split the URL final string o get an object with all params 
+            params = docURL.split('/');
+            
+            var city = params[0]
+            var query = params[1]
+
+            let country = cities.find(el => el.name === city);
+
+            var lat = parseFloat(country["lat"]);
+            var lon = parseFloat(country["lng"]);
+
+            var bbox = (lon - 0.1) + "," + (lat - 0.1) + "," + (lon + 0.1) + "," + (lat + 0.1);
+
+            let url = 'https://opendata.arcgis.com/api/v3/datasets?bbox=' + bbox + '&q='+ query 
+                +'&filter[openData]=true&filter[downloadable]=true&page[number]=1&filter[type]=Feature%20Layer&page[size]=50';
+
+            fetch(url)
+            .then(res => res.json())
+            .then((out) => {
+                out.data.forEach(element => {
+                    
+                    var dataString = "";
+                    dataString += "\nName: " + element.attributes.name + " ";
+                    dataString += "\nSupported Export Formats: " + element.attributes.layer.supportedExportFormats + " ";
+                    dataString += "\nContained Data Fields:" + element.attributes.fieldNames + " "; 
+                    //lat long extents itemExtent
+                    //projection layer.extent.spatialReference.latestWkid
+                    //layer.indexes[0].name "user_273.OBREBY_GRODZISK_OBREBY_GRODZISK_Shape_sidx",
+                    //.owner
+                    //.region
+                    //.recordCount
+                    //.size
+                    //.slug
+                    //.source
+                    //.statistics.string
+
+                    dataString += "\nURL:" + element.attributes.url + " "; 
+                    dataString += "\n" + element.attributes.thumbnailUrl + "\n";    
+
+                    var elemDiv = document.createElement('div');
+                    //elemDiv.style.cssText = 'position:absolute;width:100%;height:100%;opacity:0.3;z-index:100;background:#000;';
+                    elemDiv.innerText = dataString;
+                    document.body.appendChild(elemDiv);
+
+                    var img = new Image();
+                    img.src = "https://www.arcgis.com/sharing/rest/content/items/" + element.attributes.itemId + "/info/" + element.attributes.thumbnailUrl;
+                    document.body.appendChild(img);
+                
+                });
+
+                cities.forEach(element => {
+                console.log(element.name);
+                var a = document.createElement('a');
+                var linkText = document.createTextNode(element.name);
+                a.appendChild(linkText);
+                a.title = element.name;
+                a.style = "padding: 10px; margin: 10px;";
+                a.href = location.host + "/#/" + element.name + "/" + query;
+
+                document.body.appendChild(a);
+            });
+            })
+            .catch(err => { throw err });
+
+        }
+        } else {
+
+        cities.forEach(element => {
+            console.log(element.name);
+            var a = document.createElement('a');
+            var linkText = document.createTextNode(element.name);
+            a.appendChild(linkText);
+            a.title = element.name;
+            a.style = "padding: 10px; margin: 10px;";
+            a.href = location.host + "/client.html/#/" + element.name + "/" + query;
+
+            document.body.appendChild(a);
+        });
+
+        }
+
+    </script>
+    SearchGIS
 </body>
-</html>
